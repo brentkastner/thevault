@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory, session, send_file
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from database import db
 from flask_cors import CORS
 from models import Vault, EncryptedAsset
@@ -8,6 +9,8 @@ import secrets, json, io,os
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
 app.secret_key = secrets.token_urlsafe(32)
+app.config["JWT_SECRET_KEY"] = secrets.token_urlsafe(32)  # Secure JWT key
+jwt = JWTManager(app)
 
 base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:5000/'
 
@@ -50,20 +53,24 @@ def create_vault():
     vault = Vault(id=data['id'], salt=data['salt'])
     db.session.add(vault)
     db.session.commit()
+    access_token = create_access_token(identity=vault.id)
     diceware_key = ' '.join(secrets.choice(DICEWARE_WORD_LIST) for _ in range(6))
-    return jsonify({'diceware': diceware_key, 'id': vault.id}), 201
+    #deprecate vault.id for access_token once it's all wired up and working
+    return jsonify({'diceware': diceware_key, 'id': vault.id, 'jwt': access_token}), 201
 
 @app.route('/vaults/', methods=['GET'])
+@jwt_required()
 def get_vault_from_token():
-    bearer_token = request.headers.get('Authorization', '').replace('Bearer ', '')
-    vault = Vault.query.get(bearer_token)
+    vault_id = get_jwt_identity()
+    vault = Vault.query.get(vault_id)
     if vault is None:
         return jsonify({'error': 'Vault not found'}), 404
     return jsonify({'id': vault.id, 'salt': vault.salt, 'created_at': vault.created_at})
 
 @app.route('/vault/assets', methods=['POST'])
+@jwt_required()
 def upload_encrypted_asset():
-    vault_id = request.headers.get('Authorization').replace('Bearer ', '')
+    vault_id = get_jwt_identity()
     vault = Vault.query.get(vault_id)
     if not vault:
         return jsonify({'error': 'Invalid vault token'}), 403
@@ -81,8 +88,9 @@ def upload_encrypted_asset():
     return jsonify({'status': 'success', 'asset_id': encrypted_asset.id}), 201
 
 @app.route('/vault/assets', methods=['GET'])
+@jwt_required()
 def list_encrypted_assets():
-    vault_id = request.headers.get('Authorization').replace('Bearer ', '')
+    vault_id = get_jwt_identity()
     assets = EncryptedAsset.query.filter_by(vault_id=vault_id).all()
     asset_list = [{
         'id': asset.id,
@@ -94,8 +102,9 @@ def list_encrypted_assets():
     return jsonify(asset_list)
 
 @app.route('/vault/assets/<int:asset_id>', methods=['GET'])
+@jwt_required()
 def get_encrypted_asset(asset_id):
-    vault_id = request.headers.get('Authorization').replace('Bearer ', '')
+    vault_id = get_jwt_identity()
     asset = EncryptedAsset.query.filter_by(vault_id=vault_id, id=asset_id).first()
     if not asset:
         return jsonify({'error': 'Asset not found'}), 404

@@ -63,7 +63,7 @@ async function createVault() {
     if (response.ok) {
         const data = await response.json();
         sessionStorage.setItem('diceware', data.diceware);
-        sessionStorage.setItem('vault_token', data.id);  // hashed ID as bearer token
+        sessionStorage.setItem('jwt', data.jwt);
         window.location.href = '/diceware';
     } else {
         const error = await response.json();

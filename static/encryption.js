@@ -24,7 +24,7 @@ async function encryptData(key, data) {
 }
 
 async function loadAssets() {
-    const vault_token = sessionStorage.getItem('vault_token');
+    const vault_token = sessionStorage.getItem('jwt');
     const response = await fetch('/vault/assets', {
         headers: { 'Authorization': 'Bearer ' + vault_token }
     });
@@ -55,7 +55,7 @@ async function loadAssets() {
 }
 
 async function uploadAsset() {
-    const vault_token = sessionStorage.getItem('vault_token');
+    const vault_token = sessionStorage.getItem('jwt');
     const passphrase = document.getElementById('passphrase').value;
     const note = document.getElementById('note-input').value;
     const file = document.getElementById('file-input').files[0];
@@ -90,7 +90,6 @@ async function uploadAsset() {
     const encryptedAsset = await encryptData(key, content);
 
     const payload = {
-        vault_id: vault_token,
         asset_name: asset_name,
         asset_type: asset_type,
         content: encryptedAsset
@@ -238,7 +237,7 @@ function setupDecryptionButtons() {
  * Handles decryption after retrieving the passphrase.
  */
 async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
-    const vault_token = sessionStorage.getItem('vault_token');
+    const vault_token = sessionStorage.getItem('jwt');
 
     // Fetch vault-specific salt
     const saltResponse = await fetch('/vaults/', {
@@ -301,6 +300,7 @@ async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
 
 function logout() {
     sessionStorage.removeItem('vault_token');
+    sessionStorage.removeItem('jwt');
     window.location.href = 'index.html';
 }
 
