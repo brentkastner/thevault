@@ -12,3 +12,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+#logs
+*.log
+
+#Mac Shit
+.DS_Store
