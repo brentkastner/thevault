@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Secure Vault</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
+<body>
+    <div class="vault-create-container">
+        <h1>🔐 Create Your Secure Vault</h1>
+        <p>Generate a secure, encrypted vault to store your data.</p>
+
+        <div class="vault-create-box">
+            <input type="text" id="vaultId" placeholder="Choose a Vault ID">
+            <input type="password" id="password" placeholder="Set a Strong Password">
+            <button class="create-btn" onclick="createVault()">
+                <i class="fas fa-lock"></i> Create Vault
+            </button>
+        </div>
+
+        <p>Already have a vault? <a href="index.html">Login here</a></p>
+        <p>Questions about this service? <a href="about.html">Read More</a></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

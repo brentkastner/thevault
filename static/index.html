@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vault Login</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
+<body>
+    <div class="login-container">
+        <h1>🔐 Secure Vault Login</h1>
+        <p>Access your private, encrypted vault securely.</p>
+
+        <div class="login-box">
+            <input type="text" id="vault-id-input" placeholder="Enter Vault ID">
+            <input type="password" id="password-input" placeholder="Enter Password">
+            <button class="login-btn" onclick="loginVault()">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </div>
+
+        <p>Don't have a vault? <a href="create.html">Create one here</a></p>
+        <p>Questions about this service? <a href="about.html">Read More</a></p>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>

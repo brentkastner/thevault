@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Secure Vault</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
+<body>
+    <div class="vault-container">
+        <!-- Header Section -->
+        <header class="vault-header">
+            <h1>🔐 Secure Vault</h1>
+            <p><strong>Vault ID:</strong> <span id="vault-token"></span></p>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </header>
+
+        <!-- Encrypted Items Section -->
+        <section class="vault-items">
+            <h2>🔏 Encrypted Items</h2>
+            <ul id="item-list">
+                <!-- Dynamically populated list of encrypted items -->
+            </ul>
+        </section>
+
+        <!-- ✅ Decrypted Notes Display Section (Hidden by Default) -->
+        <section id="decrypted-notes-section" class="decrypted-notes-section" style="display: none;">
+            <h2>📄 Decrypted Notes</h2>
+            <div id="decrypted-notes">
+                <!-- Decrypted notes will be displayed here -->
+            </div>
+        </section>
+
+        <!-- Upload Section -->
+        <section class="vault-upload">
+            <h2>📤 Upload New Asset</h2>
+            <div class="upload-box">
+                <input type="file" id="file-input">
+                <textarea id="note-input" placeholder="Enter secure note"></textarea>
+                <input type="password" id="passphrase" placeholder="Diceware passphrase">
+                <button class="upload-btn" onclick="uploadAsset()">
+                    <i class="fas fa-upload"></i> Upload Asset
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- ✅ Modal for Entering Diceware Passphrase (Hidden by Default) -->
+    <div id="diceware-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Enter Diceware Passphrase</h2>
+            <input type="password" id="diceware-input" placeholder="Enter your Diceware passphrase">
+            <button class="modal-btn" onclick="submitDiceware()">Decrypt</button>
+            <button class="modal-btn cancel" onclick="closeDicewareModal()">Cancel</button>
+        </div>
+    </div>
+
+
+    <script src="encryption.js"></script>
+</body>
+</html>

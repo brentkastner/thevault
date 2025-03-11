@@ -1,0 +1,6 @@
+Gunicorn
+flask
+flask_sqlalchemy
+flask_jwt_extended
+cryptography
+flask-cors

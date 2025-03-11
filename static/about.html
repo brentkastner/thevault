@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>About This Service</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
+<body>
+    <div class="about-container">
+        <h1>🔐 About This Secure Vault</h1>
+        <p class="tagline">A **Zero Trust** storage system with **client-side encryption**.</p>
+
+        <section class="about-section">
+            <h2>🛡️ What is Zero Trust Storage?</h2>
+            <p>This tool follows a <strong>Zero Trust</strong> security model, meaning that no trust is assumed by default. 
+            Only the user holds the keys to their encrypted data.</p>
+        </section>
+
+        <section class="about-section">
+            <h2>🔑 How Client-Side Encryption Works</h2>
+            <ul>
+                <li>Your vault identifier and password generate a cryptographic key.</li>
+                <li>All encryption and decryption happen <strong>on your device</strong>, not on the server.</li>
+                <li>The server <strong>never sees your plaintext data</strong>—only encrypted files and notes.</li>
+                <li>Even if the server is compromised, <strong>your data remains secure</strong> without your passphrase.</li>
+            </ul>
+        </section>
+
+        <section class="about-section">
+            <h2>📖 How to Use This Vault</h2>
+            <ol>
+                <li><strong>Create a Vault:</strong> <br>
+                    Choose a <strong>Vault ID</strong> and **secure password** on the 
+                    <a href="create.html">Create Vault</a> page.</li>
+                <li><strong>Store Your Diceware Key:</strong> <br>
+                    When creating a vault, you receive a **Diceware Passphrase**. 
+                    <strong>Store it offline</strong>—you won't see it again.
+                    You can use this diceware key to encrypt assets or notes you add to the vault.</li>
+                <li><strong>Login to Access Your Vault:</strong> <br>
+                    Enter your Vault ID and password on the <a href="index.html">Login</a> page.</li>
+                <li><strong>Encrypt and Upload Files or Notes:</strong> <br>
+                    Use the vault dashboard to add encrypted files and notes using the randomly generated diceware phrase or one that you make up yourself.</li>
+                <li><strong>Decrypt Data When Needed:</strong> <br>
+                    Select an encrypted file or note, enter your Diceware Passphrase, and decrypt it **locally**.</li>
+            </ol>
+        </section>
+
+        <section class="about-section">
+            <h2>🚀 Why Trust This Service?</h2>
+            <ul>
+                <li><strong>Zero Knowledge:</strong> The server cannot read or decrypt your files.</li>
+                <li><strong>Client-Side Encryption:</strong> Data is encrypted before leaving your device.</li>
+                <li><strong>Diceware Passphrase:</strong> Ensures strong, human-readable encryption keys.</li>
+                <li><strong>No Password Resets:</strong> Since we never store your password, we can't reset it.</li>
+                <li><strong>No Centralized Key Storage:</strong> Your encryption key is never saved.</li>
+            </ul>
+        </section>
+
+        <div class="about-links">
+            <button class="btn" onclick="location.href='index.html'">
+                <i class="fas fa-sign-in-alt"></i> Login to Your Vault
+            </button>
+            <button class="btn create-btn" onclick="location.href='create.html'">
+                <i class="fas fa-user-plus"></i> Create a Secure Vault
+            </button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Diceware Key</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
+<body>
+    <div class="diceware-container">
+        <h1>🔑 Your Secure Diceware Passphrase</h1>
+        <p class="instruction">Store this securely offline. <br> You will not see it again.</p>
+
+        <div class="diceware-box">
+            <p id="diceware-key"></p>
+        </div>
+
+        <button class="continue-btn" onclick="location.href='vault.html'">
+            <i class="fas fa-arrow-right"></i> Continue to Vault
+        </button>
+    </div>
+
+    <script>
+        document.getElementById('diceware-key').innerText = sessionStorage.getItem('diceware');
+    </script>
+</body>
+</html>
