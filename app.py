@@ -5,6 +5,8 @@ from flask_cors import CORS
 from models import Vault, EncryptedAsset
 from sessions import set_vault_session
 import secrets, json, io,os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
@@ -14,7 +16,8 @@ jwt = JWTManager(app)
 
 base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:5000/'
 
-CORS(app, resources={r"/vaults/*": {"origins": base_url}})
+CORS(app, resources={r"*": {"origins": base_url}})
+limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
 
 print(f"Starting server with {base_url}")
 
@@ -48,6 +51,7 @@ def serve_vault():
     return app.send_static_file('vault.html')
 
 @app.route('/vaults/', methods=['POST'])
+@limiter.limit("5 per minute")
 def create_vault():
     data = request.json
     vault = Vault(id=data['id'], salt=data['salt'])
@@ -55,7 +59,6 @@ def create_vault():
     db.session.commit()
     access_token = create_access_token(identity=vault.id)
     diceware_key = ' '.join(secrets.choice(DICEWARE_WORD_LIST) for _ in range(6))
-    #deprecate vault.id for access_token once it's all wired up and working
     return jsonify({'diceware': diceware_key, 'id': vault.id, 'jwt': access_token}), 201
 
 @app.route('/vaults/', methods=['GET'])
@@ -68,6 +71,7 @@ def get_vault_from_token():
     return jsonify({'id': vault.id, 'salt': vault.salt, 'created_at': vault.created_at})
 
 @app.route('/vault/assets', methods=['POST'])
+@limiter.limit("5 per minute")
 @jwt_required()
 def upload_encrypted_asset():
     vault_id = get_jwt_identity()
@@ -115,6 +119,16 @@ def get_encrypted_asset(asset_id):
         'asset_type': asset.asset_type,
         'content': json.loads(asset.content)
     })
+
+@app.route('/login/', methods=['POST'])
+def login():
+    vault_id = request.headers.get('Authorization', '').replace('Bearer ', '')
+    if not vault_id:
+        return jsonify({'error': 'Invalid or missing token'}), 401
+    access_token = create_access_token(identity=vault_id)
+    return jsonify({'status': 'success', 'jwt': access_token}), 201
+
+
 
 if __name__ == '__main__':
     with app.app_context():

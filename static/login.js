@@ -27,13 +27,14 @@ async function loginVault() {
                           .map(b => b.toString(16).padStart(2, '0'))
                           .join('');
 
-    const response = await fetch(`/vaults/`, {
+    const response = await fetch(`/login/`, {
+        method: 'POST',
         headers: { 'Authorization': 'Bearer ' + hashedId }
     });
     if (response.ok) {
         const vault = await response.json();
-        sessionStorage.setItem('vault_token', hashedId);
-        window.location.href = '/vault.html';
+        sessionStorage.setItem('jwt', vault.jwt);
+        window.location.href = '/vault';
     } else {
         alert('Invalid Vault ID or Password.');
     }

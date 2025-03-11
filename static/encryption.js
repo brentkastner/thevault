@@ -1,4 +1,4 @@
-document.getElementById('vault-token').innerText = sessionStorage.getItem('vault_token');
+//document.getElementById('vault-token').innerText = sessionStorage.getItem('jwt');
 
 async function getKey(passphrase, salt) {
     const encoder = new TextEncoder();

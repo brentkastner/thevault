@@ -2,5 +2,6 @@ Gunicorn
 flask
 flask_sqlalchemy
 flask_jwt_extended
+flask_limiter
 cryptography
 flask-cors
