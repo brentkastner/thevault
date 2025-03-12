@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "app.py",
+                "FLASK_APP": "app/app.py",
                 "FLASK_DEBUG": "1",
                 "HOSTNAME": "http://127.0.0.1:5000"
             },

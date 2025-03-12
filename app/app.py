@@ -34,7 +34,7 @@ with app.app_context():
     db.create_all()
 
 # Load Diceware words and strip numbering
-with open('wordlist/wordlist.txt', 'r') as file:
+with open('app/wordlist/wordlist.txt', 'r') as file:
     DICEWARE_WORD_LIST = [line.strip().split('\t')[1] for line in file if '\t' in line]
 
 @app.route('/')
