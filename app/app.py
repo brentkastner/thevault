@@ -20,7 +20,7 @@ debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true', '1']
 print(f"Flask Debug env = {os.environ.get('FLASK_DEBUG')}")
 jwt = JWTManager(app)
 
-base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:3000/'
+base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:5000/'
 
 CORS(app, resources={r"*": {"origins": base_url}})
 limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
@@ -34,7 +34,7 @@ with app.app_context():
     db.create_all()
 
 # Load Diceware words and strip numbering
-with open('app/wordlist/wordlist.txt', 'r') as file:
+with open('wordlist/wordlist.txt', 'r') as file:
     DICEWARE_WORD_LIST = [line.strip().split('\t')[1] for line in file if '\t' in line]
 
 @app.route('/')
