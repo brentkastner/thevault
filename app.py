@@ -16,14 +16,16 @@ app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", secrets.token_ur
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = os.environ.get("JWT_KEY_TIMEOUT", timedelta(minutes=30)) #JWT Timeout in minutes
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("SQLITE_DB", 'sqlite:///vaultdb.sqlite3')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true', '1']
+print(f"Flask Debug env = {os.environ.get('FLASK_DEBUG')}")
 jwt = JWTManager(app)
 
-base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:5000/'
+base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:3000/'
 
 CORS(app, resources={r"*": {"origins": base_url}})
 limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
 
-print(f"Starting server with {base_url}")
+print(f"Starting server with {base_url}, and debug mode set to {debug_mode}")
 
 db.init_app(app)
 CORS(app)
@@ -149,4 +151,4 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=debug_mode)
