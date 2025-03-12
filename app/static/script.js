@@ -54,7 +54,7 @@ async function createVault() {
 
     const payload = { id: hashedId, salt: arrayBufferToHex(salt) };
 
-    const response = await fetch('http://127.0.0.1:5000/vaults/', {
+    const response = await fetch('/vaults/', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)

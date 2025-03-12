@@ -129,6 +129,9 @@ def login():
     vault_id = request.headers.get('Authorization', '').replace('Bearer ', '')
     if not vault_id:
         return jsonify({'error': 'Invalid or missing token'}), 401
+    vault = Vault.query.get(vault_id)
+    if vault is None:
+        return jsonify({'error': 'Vault not found'}), 404
     access_token = create_access_token(identity=vault_id)
     return jsonify({'status': 'success', 'jwt': access_token}), 201
 

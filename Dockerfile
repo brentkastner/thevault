@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1 \
     FLASK_DEBUG=${FLASK_DEBUG:-false} \
     FLASK_APP=app.py \
     FLASK_RUN_HOST=0.0.0.0 \
-    SQLITE_DB=sqlite:///data/vaultdb.sqlite3 \
+    SQLITE_DB=sqlite:///vaultdb.sqlite3 \
     JWT_SECRET_KEY=nevergonnagiveyouupnevergonnaletyoudown
 
 # Set working directory
@@ -16,12 +16,12 @@ WORKDIR /app
 COPY app /app
 
 # Install dependencies
-RUN apt-get install -y sqlite3
+#RUN apt-get install -y sqlite3
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose Flask default port
-EXPOSE 5000
+EXPOSE 8080
 
 # Start Flask server
 #CMD ["flask", "run"]
-CMD [ "gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "app:app"]
+CMD [ "gunicorn", "--bind", "0.0.0.0:8080", "--workers", "4", "app:app"]

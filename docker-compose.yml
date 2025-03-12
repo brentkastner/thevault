@@ -7,11 +7,12 @@ services:
     restart: always
     environment:
       - FLASK_DEBUG=true
-      - DATABASE_URL=sqlite:///data/vaultdb.sqlite3
+      - SQLITE_DB=sqlite:///vaultdb.sqlite3
+      - JWT_SECRET_KEY=nevergonnagiveyouupnevergonnaletyoudown
     volumes:
-      - ./data:/app/data  # Map SQLite to host
+      - ./data:/app/instance  # Map SQLite to host
     ports:
-      - "5000:5000"
+      - "8080:8080"
 
   nginx:
     image: nginx:latest
