@@ -7,11 +7,15 @@ from sessions import set_vault_session
 import secrets, json, io,os
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from datetime import timedelta
 
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
 app.secret_key = secrets.token_urlsafe(32)
-app.config["JWT_SECRET_KEY"] = secrets.token_urlsafe(32)  # Secure JWT key
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", secrets.token_urlsafe(32)) # Secure JWT key
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = os.environ.get("JWT_KEY_TIMEOUT", timedelta(minutes=30)) #JWT Timeout in minutes
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("SQLITE_DB", 'sqlite:///vaultdb.sqlite3')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 jwt = JWTManager(app)
 
 base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:5000/'
@@ -20,9 +24,6 @@ CORS(app, resources={r"*": {"origins": base_url}})
 limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
 
 print(f"Starting server with {base_url}")
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vaultdb.sqlite3'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 CORS(app)
@@ -62,6 +63,7 @@ def create_vault():
     return jsonify({'diceware': diceware_key, 'id': vault.id, 'jwt': access_token}), 201
 
 @app.route('/vaults/', methods=['GET'])
+@limiter.limit("10 per minute")
 @jwt_required()
 def get_vault_from_token():
     vault_id = get_jwt_identity()
@@ -128,6 +130,15 @@ def login():
     access_token = create_access_token(identity=vault_id)
     return jsonify({'status': 'success', 'jwt': access_token}), 201
 
+
+#@app.after_request
+#def add_security_headers(response):
+#    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+#    response.headers["Content-Security-Policy"] = "default-src, script-src-elem' 'self'"
+#    response.headers["X-Frame-Options"] = "DENY"
+#    response.headers["X-Content-Type-Options"] = "nosniff"
+#    response.headers["Referrer-Policy"] = "no-referrer"
+#    return response
 
 
 if __name__ == '__main__':

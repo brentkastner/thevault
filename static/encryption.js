@@ -304,5 +304,13 @@ function logout() {
     window.location.href = 'index.html';
 }
 
+// Check token validity periodically
+setInterval(() => {
+    const token = sessionStorage.getItem('jwt');
+    if (!token) {
+        alert("Session expired. Logging out.");
+        logout();
+    }
+}, 60000); // Every 60 seconds
 
 document.addEventListener('DOMContentLoaded', loadAssets);
