@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory, session, send_file
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, unset_jwt_cookies
 from database import db
 from flask_cors import CORS
 from models import Vault, EncryptedAsset
@@ -130,6 +130,11 @@ def login():
     access_token = create_access_token(identity=vault_id)
     return jsonify({'status': 'success', 'jwt': access_token}), 201
 
+@app.route('/logout/', methods=['POST'])
+def logout():
+    response = jsonify({'message': 'Logged out'})
+    unset_jwt_cookies(response)  # Remove JWT from cookies when we move from session storage to cookie storage for JWT WIP #TODO
+    return response, 200
 
 #@app.after_request
 #def add_security_headers(response):

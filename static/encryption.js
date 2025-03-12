@@ -7,7 +7,7 @@ async function getKey(passphrase, salt) {
     );
 
     return crypto.subtle.deriveKey(
-        { name: 'PBKDF2', salt: encoder.encode(salt), iterations: 100000, hash: 'SHA-256' },
+        { name: 'PBKDF2', salt: encoder.encode(salt), iterations: 600000, hash: 'SHA-512' },
         keyMaterial,
         { name: 'AES-GCM', length: 256 },
         true,
@@ -116,68 +116,12 @@ async function uploadAsset() {
 async function decryptData(key, encrypted) {
     const iv = new Uint8Array(encrypted.iv);
     const data = new Uint8Array(encrypted.data);
-    const decrypted = await crypto.subtle.decrypt(
-        {name: 'AES-GCM', iv: iv}, key, data
-    );
-    return new Uint8Array(decrypted);
-}
-
-//deprecated for the modal
-async function downloadAndDecrypt(asset_id, asset_name) {
-    const passphrase = prompt("Enter your diceware passphrase to decrypt:");
-    if (!passphrase) return;
-
-    const vault_token = sessionStorage.getItem('vault_token');
-    const vaultResponse = await fetch('/vaults/', {
-        headers: { 'Authorization': 'Bearer ' + vault_token }
-    });
-
-    const { salt } = await vaultResponse.json();
-
-    const response = await fetch(`/vault/assets/${asset_id}`, {
-        headers: { 'Authorization': 'Bearer ' + vault_token }
-    });
-    if (!response.ok) {
-        alert('Failed to fetch asset.');
-        return;
-    }
-
-    const asset = await response.json();
-    const key = await getKey(passphrase, salt);
-
     try {
-        const decryptedContent = await decryptData(key, asset.content);
-
-        if (asset.asset_type === 'note') {
-            // Display note content inline
-            const decoder = new TextDecoder();
-            const noteText = decoder.decode(decryptedContent);
-            
-            // ✅ Display decrypted notes section if hidden
-            const decryptedNotesSection = document.getElementById("decrypted-notes-section");
-            decryptedNotesSection.style.display = "block";
-
-            // ✅ Append decrypted note to section
-            const decryptedNotesContainer = document.getElementById("decrypted-notes");
-
-            const noteElement = document.createElement("div");
-            noteElement.classList.add("decrypted-note");
-            noteElement.textContent = noteText;
-
-            decryptedNotesContainer.prepend(noteElement);
-        } else {
-            const blob = new Blob([decryptedContent]);
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = asset_name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-    } catch (e) {
-        alert('Decryption failed. Incorrect passphrase or corrupted asset.');
+        const decrypted = await crypto.subtle.decrypt({name: 'AES-GCM', iv: iv}, key, data);
+        return new Uint8Array(decrypted);
+    } catch (error) {
+        await new Promise(resolve => setTimeout(resolve, 500)); // ✅ Prevent timing attacks
+        throw new Error("Decryption failed");
     }
 }
 
@@ -298,8 +242,8 @@ async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
 }
 
 
-function logout() {
-    sessionStorage.removeItem('vault_token');
+async function logout() {
+    await fetch('/logout/', { method: 'POST', credentials: 'include' });
     sessionStorage.removeItem('jwt');
     window.location.href = 'index.html';
 }
