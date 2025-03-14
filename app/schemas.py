@@ -14,6 +14,7 @@ class EncryptedAssetCreate(BaseModel):
     asset_name: str
     asset_type: str
     content: bytes
+    iv: bytes
 
 class EncryptedAsset(BaseModel):
     id: int
