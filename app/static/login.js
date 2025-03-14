@@ -39,3 +39,12 @@ async function loginVault() {
         alert('Invalid Vault ID or Password.');
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const loginButton = document.getElementById('login-button');
+    if (loginButton) {
+        loginButton.addEventListener('click', loginVault);
+    }
+    
+    // Add other event listeners here
+});

@@ -76,3 +76,12 @@ function arrayBufferToHex(buffer) {
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const createButton = document.getElementById('create-button');
+    if (createButton) {
+        createButton.addEventListener('click', createVault);
+    }
+    
+    // Add other event listeners here
+});

@@ -258,3 +258,28 @@ setInterval(() => {
 }, 60000); // Every 60 seconds
 
 document.addEventListener('DOMContentLoaded', loadAssets);
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadAssets();
+
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', logout);
+    }
+
+    const uploadButton = document.getElementById('upload-button');
+    if (uploadButton) {
+        uploadButton.addEventListener('click', uploadAsset);
+    }
+    
+    const modalButton = document.getElementById('modal-button');
+    if (modalButton) {
+        modalButton.addEventListener('click', submitDiceware);
+    }
+
+    const modalButtonCancel = document.getElementById('modal-button-cancel');
+    if (modalButtonCancel) {
+        modalButtonCancel.addEventListener('click', closeDicewareModal);
+    }
+    // Add other event listeners here
+});

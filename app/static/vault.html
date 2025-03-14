@@ -13,7 +13,7 @@
         <header class="vault-header">
             <h1>🔐 Secure Vault</h1>
             <!-- <p><strong>Vault ID:</strong> <span id="vault-token"></span></p> -->
-            <button class="logout-btn" onclick="logout()">
+            <button id='logout-button' class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </button>
         </header>
@@ -41,7 +41,7 @@
                 <input type="file" id="file-input">
                 <textarea id="note-input" placeholder="Enter secure note"></textarea>
                 <input type="password" id="passphrase" placeholder="Diceware passphrase">
-                <button class="upload-btn" onclick="uploadAsset()">
+                <button id='upload-button' class="upload-btn">
                     <i class="fas fa-upload"></i> Upload Asset
                 </button>
             </div>
@@ -53,8 +53,8 @@
         <div class="modal-content">
             <h2>Enter Diceware Passphrase</h2>
             <input type="password" id="diceware-input" placeholder="Enter your Diceware passphrase">
-            <button class="modal-btn" onclick="submitDiceware()">Decrypt</button>
-            <button class="modal-btn cancel" onclick="closeDicewareModal()">Cancel</button>
+            <button id='modal-button' class="modal-btn">Decrypt</button>
+            <button id='modal-button-cancel' class="modal-btn cancel">Cancel</button>
         </div>
     </div>
 

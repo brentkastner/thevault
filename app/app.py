@@ -22,13 +22,19 @@ jwt = JWTManager(app)
 
 base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:5000/'
 
-CORS(app, resources={r"*": {"origins": base_url}})
+# Define allowed origins
+origins = [base_url, 'http://localhost:5000', 'http://127.0.0.1:5000']
+if debug_mode:
+    origins.append('*')
+
+# Apply CORS once with proper configuration
+CORS(app, resources={r"/*": {"origins": origins}}, supports_credentials=True)
+
 limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
 
 print(f"Starting server with {base_url}, and debug mode set to {debug_mode}")
 
 db.init_app(app)
-CORS(app)
 
 with app.app_context():
     db.create_all()
@@ -141,14 +147,24 @@ def logout():
     unset_jwt_cookies(response)  # Remove JWT from cookies when we move from session storage to cookie storage for JWT WIP #TODO
     return response, 200
 
-#@app.after_request
-#def add_security_headers(response):
-#    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
-#    response.headers["Content-Security-Policy"] = "default-src, script-src-elem' 'self'"
-#    response.headers["X-Frame-Options"] = "DENY"
-#    response.headers["X-Content-Type-Options"] = "nosniff"
-#    response.headers["Referrer-Policy"] = "no-referrer"
-#    return response
+@app.after_request
+def add_security_headers(response):
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    
+    # CSP that allows your static content and Font Awesome from CDN
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' https://cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+        "font-src 'self' https://cdnjs.cloudflare.com; "
+        "img-src 'self' data:; "
+        "connect-src 'self'"
+    )
+    
+    return response
 
 
 if __name__ == '__main__':

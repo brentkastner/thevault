@@ -16,14 +16,11 @@
             <p id="diceware-key"></p>
         </div>
 
-        <button class="continue-btn" onclick="location.href='vault.html'">
+        <button id='continue-button' class="continue-btn">
             <i class="fas fa-arrow-right"></i> Continue to Vault
         </button>
     </div>
 
-    <script>
-        document.getElementById('diceware-key').innerText = sessionStorage.getItem('diceware');
-        sessionStorage.removeItem('diceware');
-    </script>
+    <script src="diceware.js"></script>
 </body>
 </html>
