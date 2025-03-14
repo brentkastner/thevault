@@ -15,14 +15,6 @@ async function getKey(passphrase, salt) {
     );
 }
 
-async function encryptData(key, data) {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv: iv }, key, data
-    );
-    return { iv: Array.from(iv), data: Array.from(new Uint8Array(encrypted)) };
-}
-
 async function loadAssets() {
     const vault_token = sessionStorage.getItem('jwt');
     const response = await fetch('/vault/assets', {
@@ -87,20 +79,25 @@ async function uploadAsset() {
         return;
     }
 
-    const encryptedAsset = await encryptData(key, content);
+    // Encrypt the data
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: iv }, key, content
+    );
 
-    const payload = {
-        asset_name: asset_name,
-        asset_type: asset_type,
-        content: encryptedAsset
-    };
+    // Create FormData object
+    const formData = new FormData();
+    formData.append('asset_name', asset_name);
+    formData.append('asset_type', asset_type);
+    formData.append('encrypted_data', new Blob([encrypted], { type: 'application/octet-stream' }));
+    formData.append('iv', new Blob([iv], { type: 'application/octet-stream' }));
 
     const response = await fetch('/vault/assets', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-                   'Authorization': 'Bearer ' + vault_token
+        headers: {
+            'Authorization': 'Bearer ' + vault_token
          },
-        body: JSON.stringify(payload)
+        body: formData
     });
 
     if (response.ok) {
@@ -109,19 +106,6 @@ async function uploadAsset() {
     } else {
         const error = await response.json();
         alert('Error: ' + error.error);
-    }
-}
-
-
-async function decryptData(key, encrypted) {
-    const iv = new Uint8Array(encrypted.iv);
-    const data = new Uint8Array(encrypted.data);
-    try {
-        const decrypted = await crypto.subtle.decrypt({name: 'AES-GCM', iv: iv}, key, data);
-        return new Uint8Array(decrypted);
-    } catch (error) {
-        await new Promise(resolve => setTimeout(resolve, 500)); // ✅ Prevent timing attacks
-        throw new Error("Decryption failed");
     }
 }
 
@@ -211,7 +195,16 @@ async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
     const key = await getKey(passphrase, salt);
 
     try {
-        const decryptedContent = await decryptData(key, asset.content);
+        // Convert base64 back to binary
+        const ivArray = Uint8Array.from(atob(asset.iv), c => c.charCodeAt(0));
+        const encryptedData = Uint8Array.from(atob(asset.content), c => c.charCodeAt(0));
+        
+        // Decrypt the data
+        const decryptedContent = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: ivArray },
+            key,
+            encryptedData
+        );
 
         if (asset_type === 'note') {
             const decoder = new TextDecoder("utf-8");
@@ -225,7 +218,7 @@ async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
             noteElement.textContent = noteText;
             decryptedNotesContainer.prepend(noteElement);
         } else {
-            const blob = new Blob([decryptedContent]);
+            const blob = new Blob([new Uint8Array(decryptedContent)]);
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;

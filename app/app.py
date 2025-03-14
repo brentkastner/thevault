@@ -89,17 +89,24 @@ def upload_encrypted_asset():
     if not vault:
         return jsonify({'error': 'Invalid vault token'}), 403
 
-    data = request.json
-    encrypted_asset = EncryptedAsset(
-        vault_id=vault_id,
-        asset_name=data['asset_name'],
-        asset_type=data['asset_type'],
-        content=json.dumps(data['content']).encode('utf-8')
-    )
-    db.session.add(encrypted_asset)
-    db.session.commit()
-
-    return jsonify({'status': 'success', 'asset_id': encrypted_asset.id}), 201
+    try:
+        asset_name = request.form['asset_name']
+        asset_type = request.form['asset_type']
+        encrypted_data = request.files['encrypted_data'].read()
+        iv = request.files['iv'].read()
+        
+        encrypted_asset = EncryptedAsset(
+            vault_id=vault_id,
+            asset_name=asset_name,
+            asset_type=asset_type,
+            content=encrypted_data,
+            iv=iv
+        )
+        db.session.add(encrypted_asset)
+        db.session.commit()
+        return jsonify({'status': 'success', 'asset_id': encrypted_asset.id}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/vault/assets', methods=['GET'])
 @jwt_required()
@@ -123,12 +130,29 @@ def get_encrypted_asset(asset_id):
     if not asset:
         return jsonify({'error': 'Asset not found'}), 404
 
-    return jsonify({
+
+    # For metadata, return JSON
+    response = {
         'id': asset.id,
         'asset_name': asset.asset_name,
         'asset_type': asset.asset_type,
-        'content': json.loads(asset.content)
-    })
+    }
+    
+    # For binary data, send as octet-stream
+    if request.args.get('download') == 'true':
+        return send_file(
+            io.BytesIO(asset.content),
+            mimetype='application/octet-stream',
+            as_attachment=True,
+            download_name=f"encrypted_{asset.asset_name}"
+        )
+    
+    # For UI display, include binary data converted to base64
+    import base64
+    response['content'] = base64.b64encode(asset.content).decode('utf-8')
+    response['iv'] = base64.b64encode(asset.iv).decode('utf-8')
+    
+    return jsonify(response)
 
 @app.route('/login/', methods=['POST'])
 def login():
