@@ -1,29 +1,3 @@
-async function login() {
-    const vaultId = document.getElementById('vaultId').value;
-    const password = document.getElementById('password').value;
-
-    // Use WebCrypto API for secure hashing
-    const encoder = new TextEncoder();
-    const keyMaterial = await window.crypto.subtle.importKey(
-        "raw",
-        encoder.encode(password),
-        {name: "PBKDF2"},
-        false,
-        ["deriveBits", "deriveKey"]
-    );
-
-    const key = await window.crypto.subtle.deriveKey(
-        {name: "PBKDF2", salt: encoder.encode(vaultId), iterations: 100000, hash: "SHA-256"},
-        keyMaterial,
-        {name: "AES-GCM", length: 256},
-        true,
-        ["encrypt", "decrypt"]
-    );
-
-    console.log('Vault key generated:', key);
-    // Proceed with authentication or API calls
-}
-
 async function createVault() {
     const vaultId = document.getElementById('vaultId').value;
     const password = document.getElementById('password').value;
@@ -43,8 +17,8 @@ async function createVault() {
         {
             name: 'PBKDF2',
             salt: encoder.encode(vaultId),
-            iterations: 100000,
-            hash: 'SHA-256'
+            iterations: 600000,
+            hash: 'SHA-512'
         },
         keyMaterial,
         256
@@ -57,13 +31,13 @@ async function createVault() {
     const response = await fetch('/vaults/', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        credentials: 'include' // Add this to handle cookies
     });
 
     if (response.ok) {
         const data = await response.json();
         sessionStorage.setItem('diceware', data.diceware);
-        sessionStorage.setItem('jwt', data.jwt);
         window.location.href = '/diceware';
     } else {
         const error = await response.json();
