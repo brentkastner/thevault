@@ -16,8 +16,8 @@ async function loginVault() {
         {
             name: 'PBKDF2',
             salt: encoder.encode(vaultId),
-            iterations: 100000,
-            hash: 'SHA-256'
+            iterations: 600000,
+            hash: 'SHA-512'
         },
         keyMaterial,
         256
@@ -27,16 +27,22 @@ async function loginVault() {
                           .map(b => b.toString(16).padStart(2, '0'))
                           .join('');
 
-    const response = await fetch(`/login/`, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + hashedId }
-    });
-    if (response.ok) {
-        const vault = await response.json();
-        sessionStorage.setItem('jwt', vault.jwt);
-        window.location.href = '/vault';
-    } else {
-        alert('Invalid Vault ID or Password.');
+    try {
+        const response = await fetch(`/login/`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + hashedId },
+            credentials: 'include' // Include cookies in the request/response
+        });
+        
+        if (response.ok) {
+            // No need to extract and store JWT - it's in the cookie now
+            window.location.href = '/vault';
+        } else {
+            alert('Invalid Vault ID or Password.');
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        alert('Login failed. Please try again.');
     }
 }
 

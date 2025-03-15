@@ -1,5 +1,3 @@
-//document.getElementById('vault-token').innerText = sessionStorage.getItem('jwt');
-
 async function getKey(passphrase, salt) {
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
@@ -15,10 +13,23 @@ async function getKey(passphrase, salt) {
     );
 }
 
+function getCSRFToken() {
+    // Option 1: Extract from a cookie that Flask-JWT-Extended sets
+    return getCookie('csrf_access_token');
+}
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
 async function loadAssets() {
-    const vault_token = sessionStorage.getItem('jwt');
     const response = await fetch('/vault/assets', {
-        headers: { 'Authorization': 'Bearer ' + vault_token }
+        credentials: 'include',  // This tells the browser to send cookies with the request
+        headers: {
+            'X-CSRF-TOKEN': getCSRFToken()  // Function to get CSRF token from cookie or DOM
+        }
     });
     const items = await response.json();
 
@@ -47,7 +58,6 @@ async function loadAssets() {
 }
 
 async function uploadAsset() {
-    const vault_token = sessionStorage.getItem('jwt');
     const passphrase = document.getElementById('passphrase').value;
     const note = document.getElementById('note-input').value;
     const file = document.getElementById('file-input').files[0];
@@ -58,7 +68,10 @@ async function uploadAsset() {
     }
 
     const vaultResponse = await fetch('/vaults/', {
-        headers: { 'Authorization': 'Bearer ' + vault_token }
+        credentials: 'include',
+        headers: {
+            'X-CSRF-TOKEN': getCSRFToken()
+        },
     });
 
     const { salt } = await vaultResponse.json();
@@ -94,9 +107,10 @@ async function uploadAsset() {
 
     const response = await fetch('/vault/assets', {
         method: 'POST',
+        credentials: 'include',  // This tells the browser to send cookies with the request
         headers: {
-            'Authorization': 'Bearer ' + vault_token
-         },
+            'X-CSRF-TOKEN': getCSRFToken()  // Function to get CSRF token from cookie or DOM
+        },
         body: formData
     });
 
@@ -165,11 +179,12 @@ function setupDecryptionButtons() {
  * Handles decryption after retrieving the passphrase.
  */
 async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
-    const vault_token = sessionStorage.getItem('jwt');
-
     // Fetch vault-specific salt
     const saltResponse = await fetch('/vaults/', {
-        headers: { 'Authorization': 'Bearer ' + vault_token }
+        credentials: 'include',
+        headers: {
+            'X-CSRF-TOKEN': getCSRFToken()
+        },
     });
 
     if (!saltResponse.ok) {
@@ -181,7 +196,10 @@ async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
 
     // Fetch encrypted asset
     const response = await fetch(`/vault/assets/${asset_id}`, {
-        headers: { 'Authorization': 'Bearer ' + vault_token }
+        credentials: 'include',  // This tells the browser to send cookies with the request
+        headers: {
+            'X-CSRF-TOKEN': getCSRFToken()  // Function to get CSRF token from cookie or DOM
+        }
     });
 
     if (!response.ok) {
@@ -236,17 +254,42 @@ async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
 
 
 async function logout() {
-    await fetch('/logout/', { method: 'POST', credentials: 'include' });
-    sessionStorage.removeItem('jwt');
-    window.location.href = 'index.html';
+    try {
+        // Send logout request with credentials to ensure cookies are sent
+        const response = await fetch('/logout/', { 
+            method: 'POST', 
+            credentials: 'include',
+            headers: {
+                'X-CSRF-TOKEN': getCSRFToken()  // Include CSRF token for POST request
+            }
+        });
+        
+        if (!response.ok) {
+            console.error('Logout failed:', await response.text());
+        }
+        
+        // No need to remove anything from sessionStorage
+        // Just redirect to login page
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Error during logout:', error);
+        alert('Failed to logout. Please try again.');
+    }
 }
 
 // Check token validity periodically
-setInterval(() => {
-    const token = sessionStorage.getItem('jwt');
-    if (!token) {
-        alert("Session expired. Logging out.");
-        logout();
+setInterval(async () => {
+    // Make a lightweight call to check if session is still valid
+    try {
+        const response = await fetch('/check-session', {
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            alert("Session expired. Logging out.");
+            logout();
+        }
+    } catch (error) {
+        console.error("Error checking session:", error);
     }
 }, 60000); // Every 60 seconds
 

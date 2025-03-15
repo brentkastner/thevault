@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory, session, send_file
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, unset_jwt_cookies
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, unset_jwt_cookies, set_access_cookies, set_refresh_cookies
 from database import db
 from flask_cors import CORS
 from models import Vault, EncryptedAsset
@@ -14,6 +14,11 @@ app = Flask(__name__, static_folder='static', static_url_path='/')
 app.secret_key = secrets.token_urlsafe(32)
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", secrets.token_urlsafe(32)) # Secure JWT key
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = os.environ.get("JWT_KEY_TIMEOUT", timedelta(minutes=30)) #JWT Timeout in minutes
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+app.config["JWT_COOKIE_SECURE"] = True  # Set to False during local development without HTTPS
+app.config["JWT_COOKIE_CSRF_PROTECT"] = True
+app.config["JWT_CSRF_CHECK_FORM"] = True
+app.config["JWT_COOKIE_SAMESITE"] = "Strict"
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("SQLITE_DB", 'sqlite:///vaultdb.sqlite3')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true', '1']
@@ -67,8 +72,16 @@ def create_vault():
     db.session.add(vault)
     db.session.commit()
     access_token = create_access_token(identity=vault.id)
-    diceware_key = ' '.join(secrets.choice(DICEWARE_WORD_LIST) for _ in range(6))
-    return jsonify({'diceware': diceware_key, 'id': vault.id, 'jwt': access_token}), 201
+    # Create response with diceware key
+    response = jsonify({
+        'diceware': ' '.join(secrets.choice(DICEWARE_WORD_LIST) for _ in range(6)),
+        'id': vault.id
+    })
+    
+    # Set the JWT as an HttpOnly cookie
+    set_access_cookies(response, access_token)
+    
+    return response, 201
 
 @app.route('/vaults/', methods=['GET'])
 @limiter.limit("10 per minute")
@@ -162,14 +175,28 @@ def login():
     vault = Vault.query.get(vault_id)
     if vault is None:
         return jsonify({'error': 'Vault not found'}), 404
+    
+    # Create access token
     access_token = create_access_token(identity=vault_id)
-    return jsonify({'status': 'success', 'jwt': access_token}), 201
+    
+    # Create response
+    response = jsonify({'status': 'success'})
+    
+    # Set JWT as HttpOnly cookie
+    set_access_cookies(response, access_token)
+    
+    return response, 201
 
 @app.route('/logout/', methods=['POST'])
 def logout():
     response = jsonify({'message': 'Logged out'})
     unset_jwt_cookies(response)  # Remove JWT from cookies when we move from session storage to cookie storage for JWT WIP #TODO
     return response, 200
+
+@app.route('/check-session', methods=['GET'])
+@jwt_required()
+def check_session():
+    return jsonify({'status': 'valid'}), 200
 
 @app.after_request
 def add_security_headers(response):
