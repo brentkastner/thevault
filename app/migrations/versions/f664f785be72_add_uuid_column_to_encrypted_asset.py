@@ -23,7 +23,7 @@ def upgrade():
         batch_op.add_column(sa.Column('asset_uuid', sa.String(length=256), nullable=True))
 
     for ea in EncryptedAsset.query.all():
-        ea.asset_uuid = uuid.uuid4()
+        ea.asset_uuid = str(uuid.uuid4())
     # ### end Alembic commands ###
 
 
