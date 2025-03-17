@@ -45,7 +45,7 @@ async function loadAssets() {
         button.textContent = item.asset_type === 'note' ? 'Show Note' : 'Download & Decrypt';
         
         // ✅ Set data attributes to store asset details
-        button.setAttribute("data-asset-id", item.id);
+        button.setAttribute("data-asset-id", item.asset_uuid);
         button.setAttribute("data-asset-name", item.asset_name);
         button.setAttribute("data-asset-type", item.asset_type);
 
@@ -130,8 +130,8 @@ let decryptAssetType = null;
 /**
  * ✅ Opens the Diceware modal only when decryption is requested.
  */
-function openDicewareModal(asset_id, asset_name, asset_type) {
-    decryptAssetId = asset_id;
+function openDicewareModal(asset_uuid, asset_name, asset_type) {
+    decryptAssetId = asset_uuid;
     decryptAssetName = asset_name;
     decryptAssetType = asset_type;
     
@@ -178,7 +178,7 @@ function setupDecryptionButtons() {
 /**
  * Handles decryption after retrieving the passphrase.
  */
-async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
+async function decryptAsset(asset_uuid, asset_name, asset_type, passphrase) {
     // Fetch vault-specific salt
     const saltResponse = await fetch('/vaults/', {
         credentials: 'include',
@@ -195,7 +195,7 @@ async function decryptAsset(asset_id, asset_name, asset_type, passphrase) {
     const { salt } = await saltResponse.json();
 
     // Fetch encrypted asset
-    const response = await fetch(`/vault/assets/${asset_id}`, {
+    const response = await fetch(`/vault/assets/${asset_uuid}`, {
         credentials: 'include',  // This tells the browser to send cookies with the request
         headers: {
             'X-CSRF-TOKEN': getCSRFToken()  // Function to get CSRF token from cookie or DOM

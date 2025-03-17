@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify, send_from_directory, session, send_file
+from flask import Flask, request, jsonify, send_file
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, unset_jwt_cookies, set_access_cookies, set_refresh_cookies
 from database import db
+from flask_migrate import Migrate
 from flask_cors import CORS
 from models import Vault, EncryptedAsset
-from sessions import set_vault_session
-import secrets, json, io,os
+import secrets, io, os, uuid
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import timedelta
@@ -40,6 +40,7 @@ limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"]
 print(f"Starting server with {base_url}, and debug mode set to {debug_mode}")
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 with app.app_context():
     db.create_all()
@@ -103,6 +104,7 @@ def upload_encrypted_asset():
         return jsonify({'error': 'Invalid vault token'}), 403
 
     try:
+        asset_uuid = str(uuid.uuid4())
         asset_name = request.form['asset_name']
         asset_type = request.form['asset_type']
         encrypted_data = request.files['encrypted_data'].read()
@@ -110,6 +112,7 @@ def upload_encrypted_asset():
         
         encrypted_asset = EncryptedAsset(
             vault_id=vault_id,
+            asset_uuid = asset_uuid,
             asset_name=asset_name,
             asset_type=asset_type,
             content=encrypted_data,
@@ -117,7 +120,7 @@ def upload_encrypted_asset():
         )
         db.session.add(encrypted_asset)
         db.session.commit()
-        return jsonify({'status': 'success', 'asset_id': encrypted_asset.id}), 201
+        return jsonify({'status': 'success', 'asset_uuid': encrypted_asset.asset_uuid}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -127,7 +130,7 @@ def list_encrypted_assets():
     vault_id = get_jwt_identity()
     assets = EncryptedAsset.query.filter_by(vault_id=vault_id).all()
     asset_list = [{
-        'id': asset.id,
+        'asset_uuid': asset.asset_uuid,
         'asset_name': asset.asset_name,
         'asset_type': asset.asset_type,
         'uploaded_at': asset.uploaded_at
@@ -135,18 +138,18 @@ def list_encrypted_assets():
 
     return jsonify(asset_list)
 
-@app.route('/vault/assets/<int:asset_id>', methods=['GET'])
+@app.route('/vault/assets/<asset_uuid>', methods=['GET'])
 @jwt_required()
-def get_encrypted_asset(asset_id):
+def get_encrypted_asset(asset_uuid):
     vault_id = get_jwt_identity()
-    asset = EncryptedAsset.query.filter_by(vault_id=vault_id, id=asset_id).first()
+    asset = EncryptedAsset.query.filter_by(vault_id=vault_id, asset_uuid=asset_uuid).first()
     if not asset:
         return jsonify({'error': 'Asset not found'}), 404
 
 
     # For metadata, return JSON
     response = {
-        'id': asset.id,
+        'asset_uuid': asset.asset_uuid,
         'asset_name': asset.asset_name,
         'asset_type': asset.asset_type,
     }

@@ -9,6 +9,7 @@ class Vault(db.Model):
 class EncryptedAsset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vault_id = db.Column(db.String(256), db.ForeignKey('vault.id'))
+    asset_uuid = db.Column(db.String(256))
     asset_name = db.Column(db.String(256))
     asset_type = db.Column(db.String(10))
     content = db.Column(db.LargeBinary)
