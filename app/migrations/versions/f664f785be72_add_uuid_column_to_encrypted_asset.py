@@ -5,6 +5,7 @@ Revises:
 Create Date: 2025-03-17 10:02:32.505802
 
 """
+from app import db
 from alembic import op
 import sqlalchemy as sa
 #import f664f785be72_add_uuid_column_to_encrypted_asset
@@ -24,6 +25,7 @@ def upgrade():
 
     for ea in EncryptedAsset.query.all():
         ea.asset_uuid = str(uuid.uuid4())
+        db.session.commit()
     # ### end Alembic commands ###
 
 
