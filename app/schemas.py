@@ -18,6 +18,7 @@ class EncryptedAssetCreate(BaseModel):
 
 class EncryptedAsset(BaseModel):
     id: int
+    asset_uuid: str
     asset_name: str
     asset_type: str
     vault_id: str

@@ -1,6 +1,7 @@
 Gunicorn
 flask
 flask_sqlalchemy
+flask-migrate
 flask_jwt_extended
 flask_limiter
 cryptography
