@@ -63,7 +63,7 @@ async function uploadAsset() {
     const file = document.getElementById('file-input').files[0];
 
     if (!passphrase) {
-        alert('Please enter your diceware passphrase.');
+        showErrorOverlay('Please enter your diceware passphrase.');
         return;
     }
 
@@ -88,7 +88,7 @@ async function uploadAsset() {
         asset_type = 'note';
         content = new TextEncoder().encode(note);
     } else {
-        alert('Please provide a file or a note to upload.');
+        showErrorOverlay('Please provide a file or a note to upload.');
         return;
     }
 
@@ -119,7 +119,7 @@ async function uploadAsset() {
         //loadAssets();
     } else {
         const error = await response.json();
-        alert('Error: ' + error.error);
+        showErrorOverlay('Error: ' + error.error);
     }
 }
 
@@ -151,7 +151,7 @@ function closeDicewareModal() {
 async function submitDiceware() {
     const passphrase = document.getElementById("diceware-input").value;
     if (!passphrase) {
-        alert("Please enter your Diceware passphrase.");
+        showErrorOverlay("Please enter your Diceware passphrase.");
         return;
     }
     
@@ -188,7 +188,7 @@ async function decryptAsset(asset_uuid, asset_name, asset_type, passphrase) {
     });
 
     if (!saltResponse.ok) {
-        alert('Error fetching vault details.');
+        showErrorOverlay('Error fetching vault details.');
         return;
     }
 
@@ -203,7 +203,7 @@ async function decryptAsset(asset_uuid, asset_name, asset_type, passphrase) {
     });
 
     if (!response.ok) {
-        alert('Error fetching asset.');
+        showErrorOverlay('Error fetching asset.');
         return;
     }
 
@@ -248,7 +248,7 @@ async function decryptAsset(asset_uuid, asset_name, asset_type, passphrase) {
         }
     } catch (e) {
         console.error(e);
-        alert('Decryption failed. Check your passphrase.');
+        showErrorOverlay('Decryption failed. Check your passphrase.');
     }
 }
 
@@ -273,7 +273,7 @@ async function logout() {
         window.location.href = 'index.html';
     } catch (error) {
         console.error('Error during logout:', error);
-        alert('Failed to logout. Please try again.');
+        showErrorOverlay('Failed to logout. Please try again.');
     }
 }
 
@@ -285,7 +285,7 @@ setInterval(async () => {
             credentials: 'include'
         });
         if (!response.ok) {
-            alert("Session expired. Logging out.");
+            showErrorOverlay("Session expired. Logging out.");
             logout();
         }
     } catch (error) {
@@ -318,4 +318,23 @@ document.addEventListener('DOMContentLoaded', function() {
         modalButtonCancel.addEventListener('click', closeDicewareModal);
     }
     // Add other event listeners here
+    const closeOverlay = document.getElementById('closeOverlay');
+    if (closeOverlay) {
+        closeOverlay.addEventListener('click', hideErrorOverlay);
+    }
+    const closeOverlayBTN = document.getElementById('closeOverlayBTN');
+    if (closeOverlayBTN) {
+        closeOverlayBTN.addEventListener('click', hideErrorOverlay);
+    }
 });
+
+// Show Error Overlay with Custom Message
+function showErrorOverlay(message) {
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('error-overlay').classList.remove('hidden');
+}
+
+// Hide Error Overlay
+function hideErrorOverlay() {
+    document.getElementById('error-overlay').classList.add('hidden');
+}

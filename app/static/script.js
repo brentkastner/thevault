@@ -2,12 +2,17 @@ async function createVault() {
     const vaultId = document.getElementById('vaultId').value;
     const password = document.getElementById('password').value;
 
+    if (!vaultId || !password) {
+        showErrorOverlay('Please enter both Vault ID and Password.');
+        return;
+    }
+
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const encoder = new TextEncoder();
 
     const keyMaterial = await crypto.subtle.importKey(
         'raw',
-        encoder.encode(password),
+        encoder.encode(vaultId+password),
         { name: 'PBKDF2' },
         false,
         ['deriveBits']
@@ -16,7 +21,7 @@ async function createVault() {
     const keyBuffer = await crypto.subtle.deriveBits(
         {
             name: 'PBKDF2',
-            salt: encoder.encode(vaultId),
+            salt: encoder.encode(vaultId+password),
             iterations: 600000,
             hash: 'SHA-512'
         },
@@ -58,4 +63,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Add other event listeners here
+    const closeOverlay = document.getElementById('closeOverlay');
+    if (closeOverlay) {
+        closeOverlay.addEventListener('click', hideErrorOverlay);
+    }
+    const closeOverlayBTN = document.getElementById('closeOverlayBTN');
+    if (closeOverlayBTN) {
+        closeOverlayBTN.addEventListener('click', hideErrorOverlay);
+    }
 });
+
+// Show Error Overlay with Custom Message
+function showErrorOverlay(message) {
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('error-overlay').classList.remove('hidden');
+}
+
+// Hide Error Overlay
+function hideErrorOverlay() {
+    document.getElementById('error-overlay').classList.add('hidden');
+}
