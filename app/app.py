@@ -171,6 +171,7 @@ def get_encrypted_asset(asset_uuid):
     return jsonify(response)
 
 @app.route('/login/', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     vault_id = request.headers.get('Authorization', '').replace('Bearer ', '')
     if not vault_id:
