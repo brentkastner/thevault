@@ -3,19 +3,19 @@ async function loginVault() {
     const password = document.getElementById('password-input').value;
 
     if (!vaultId || !password) {
-        alert('Please enter both Vault ID and Password.');
+        showErrorOverlay('Please enter both Vault ID and Password.');
         return;
     }
 
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
-        'raw', encoder.encode(password), { name: 'PBKDF2' }, false, ['deriveBits']
+        'raw', encoder.encode(vaultId+password), { name: 'PBKDF2' }, false, ['deriveBits']
     );
 
     const hashBuffer = await crypto.subtle.deriveBits(
         {
             name: 'PBKDF2',
-            salt: encoder.encode(vaultId),
+            salt: encoder.encode(vaultId+password),
             iterations: 600000,
             hash: 'SHA-512'
         },
@@ -38,11 +38,11 @@ async function loginVault() {
             // No need to extract and store JWT - it's in the cookie now
             window.location.href = '/vault';
         } else {
-            alert('Invalid Vault ID or Password.');
+            showErrorOverlay('Invalid Vault ID or Password.');
         }
     } catch (error) {
         console.error('Error during login:', error);
-        alert('Login failed. Please try again.');
+        showErrorOverlay('Login failed. Please try again.');
     }
 }
 
@@ -53,4 +53,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Add other event listeners here
+    const closeOverlay = document.getElementById('closeOverlay');
+    if (closeOverlay) {
+        closeOverlay.addEventListener('click', hideErrorOverlay);
+    }
+    const closeOverlayBTN = document.getElementById('closeOverlayBTN');
+    if (closeOverlayBTN) {
+        closeOverlayBTN.addEventListener('click', hideErrorOverlay);
+    }
 });
+
+// Show Error Overlay with Custom Message
+function showErrorOverlay(message) {
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('error-overlay').classList.remove('hidden');
+}
+
+// Hide Error Overlay
+function hideErrorOverlay() {
+    document.getElementById('error-overlay').classList.add('hidden');
+}

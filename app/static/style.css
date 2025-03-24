@@ -469,3 +469,64 @@ body {
 .create-btn:hover {
     background-color: #d4a700;
 }
+
+/* Overlay Styles (Generic Error Overlay) */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.overlay-content {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+.overlay-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.overlay-close:hover {
+    color: #fff;
+}
+
+.overlay-btn {
+    background-color: #03dac6;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.overlay-btn:hover {
+    background-color: #029e91;
+}
+
+#overlay-message {
+    margin-top: 10px;
+}
