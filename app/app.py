@@ -62,6 +62,8 @@ def serve_static(path):
     return app.send_static_file(path)
 
 @app.route('/vault')
+@app.route('/vault.html')
+@jwt_required()
 def serve_vault():
     return app.send_static_file('vault.html')
 

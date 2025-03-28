@@ -2,7 +2,7 @@ document.getElementById('diceware-key').innerText = sessionStorage.getItem('dice
 sessionStorage.removeItem('diceware');
 
 function continueClick(){
-    location.href='vault.html';
+    location.href='/vault';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
