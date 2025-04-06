@@ -3,6 +3,7 @@ __pycache__/
 
 #sqllite dev
 *sqlite3
+instance/
 
 # Environments
 .env

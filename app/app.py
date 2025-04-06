@@ -8,6 +8,10 @@ import secrets, io, os, uuid
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import timedelta
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
@@ -25,6 +29,13 @@ debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() in ['true', '1']
 print(f"Flask Debug env = {os.environ.get('FLASK_DEBUG')}")
 jwt = JWTManager(app)
 
+#Set PRAGMAS for SQLite
+@event.listens_for(Engine, "connect")
+def _set_sqlite_WAL_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.close()
+
 base_url = os.environ.get('HOSTNAME') or 'http://127.0.0.1:5000/'
 
 # Define allowed origins
@@ -40,6 +51,7 @@ limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"]
 print(f"Starting server with {base_url}, and debug mode set to {debug_mode}")
 
 db.init_app(app)
+
 migrate = Migrate(app, db)
 
 with app.app_context():
